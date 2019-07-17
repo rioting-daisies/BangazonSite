@@ -63,6 +63,25 @@ namespace Bangazon.Data {
             user.PasswordHash = passwordHash.HashPassword(user, "Admin8*");
             modelBuilder.Entity<ApplicationUser>().HasData(user);
 
+            ApplicationUser user2 = new ApplicationUser
+            {
+                FirstName = "Buyer",
+                LastName = "McBuyin",
+                StreetAddress = "123 Hey Pocky Way",
+                UserName = "buyer@buyer.com",
+                NormalizedUserName = "BUYER@BUYER.COM",
+                Email = "buyer@buyer.com",
+                NormalizedEmail = "BUYER@BUYER.COM",
+                EmailConfirmed = true,
+                LockoutEnabled = false,
+                SecurityStamp = "7f434309-a4d9-48e9-9ebb-8803db794579",
+                Id = "00000001-ffff-ffff-ffff-ffffffffffff"
+            };
+            var passwordHash2 = new PasswordHasher<ApplicationUser>();
+            user2.PasswordHash = passwordHash.HashPassword(user2, "Buyer8*");
+            modelBuilder.Entity<ApplicationUser>().HasData(user2);
+
+
             modelBuilder.Entity<PaymentType> ().HasData (
                 new PaymentType()
                 {
@@ -190,7 +209,7 @@ namespace Bangazon.Data {
                 new Order()
                 {
                     OrderId = 1,
-                    UserId = user.Id,
+                    UserId = user2.Id,
                     PaymentTypeId = null
                 }
             );
