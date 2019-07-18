@@ -19,11 +19,12 @@ namespace Bangazon.Controllers
             _context = context;
         }
 
+        // The product index view has been changed to show the 20 products needed for the homepage model. 
         // GET: Products
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
-            return View(await applicationDbContext.ToListAsync());
+            return View(await applicationDbContext.OrderBy(p => p.DateCreated).Take(20).ToListAsync());
         }
 
         // GET: Products/Details/5
