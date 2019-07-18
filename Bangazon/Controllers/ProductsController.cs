@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Bangazon.Data;
 using Bangazon.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ProductViewModels;
 
 namespace Bangazon.Controllers
@@ -14,11 +16,17 @@ namespace Bangazon.Controllers
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
+
+        // This method will be called every time we need to get the current user
+        private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
         // The product index view has been changed to show the 20 products needed for the homepage model. 
         // GET: Products
@@ -60,11 +68,18 @@ namespace Bangazon.Controllers
         }
 
         // GET: Products/Create
-        public IActionResult Create()
+        // user must be authorized to create a product that they want to sell
+        [Authorize]
+        public async Task<IActionResult> Create()
         {
-            ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label");
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
-            return View();
+            //ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label");
+            //ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
+
+            var viewModel = new ProductCreateViewModel
+            {
+                AvailableProductTypes = await _context.ProductType.ToListAsync(),
+            };
+            return View(viewModel);
         }
 
         // POST: Products/Create
@@ -72,17 +87,27 @@ namespace Bangazon.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductId,DateCreated,Description,Title,Price,Quantity,UserId,City,ImagePath,Active,ProductTypeId")] Product product)
+        [Authorize]
+        public async Task<IActionResult> Create(ProductCreateViewModel viewModel)
         {
+            //ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
+            //ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
+            ModelState.Remove("Product.ProductType");
+            ModelState.Remove("Product.User");
+            ModelState.Remove("Product.UserId");
+
             if (ModelState.IsValid)
             {
+                var product = viewModel.Product;
+                var currUser = await GetCurrentUserAsync();
+                product.UserId = currUser.Id;
                 _context.Add(product);
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
-            return View(product);
+            viewModel.AvailableProductTypes = await _context.ProductType.ToListAsync();
+            return View(viewModel);
         }
 
         // GET: Products/Edit/5
