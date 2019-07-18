@@ -9,6 +9,7 @@ using Bangazon.Data;
 using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Bangazon.Models.ProductViewModels;
 
 namespace Bangazon.Controllers
 {
@@ -57,11 +58,16 @@ namespace Bangazon.Controllers
         // GET: Products/Create
         // user must be authorized to create a product that they want to sell
         [Authorize]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label");
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
-            return View();
+            //ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label");
+            //ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
+
+            var viewModel = new ProductCreateViewModel
+            {
+                AvailableProductTypes = await _context.ProductType.ToListAsync(),
+            };
+            return View(viewModel);
         }
 
         // POST: Products/Create
@@ -70,7 +76,7 @@ namespace Bangazon.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create([Bind("ProductId,DateCreated,Description,Title,Price,Quantity,UserId,City,ImagePath,Active,ProductTypeId")] Product product)
+        public async Task<IActionResult> Create(ProductCreateViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
@@ -78,9 +84,16 @@ namespace Bangazon.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
-            return View(product);
+            //ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
+            //ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
+
+            ModelState.Remove("Product.ProductType");
+            ModelState.Remove("Product.Owner");
+            ModelState.Remove("Product.OwnerId");
+
+
+
+            return View(viewModel);
         }
 
         // GET: Products/Edit/5
