@@ -9,6 +9,7 @@
 <h1 class="display-4">Welcome to Bangazon</h1>
 
 <hr />
+<h4>New Products</h4>
 
 <table class="table">
     <thead>
@@ -23,9 +24,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.Price)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateCreated)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -34,20 +32,13 @@
         {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Title)
+                <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title)</a> 
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
-
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateCreated)
-            </td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.ProductId">Details</a>
             </td>
         </tr>
         }
