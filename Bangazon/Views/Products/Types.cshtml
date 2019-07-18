@@ -1,0 +1,45 @@
+﻿@model Bangazon.Models.ProductViewModels.ProductTypesViewModel
+@{
+    ViewData["Title"] = "Types";
+}
+<h1>Product Types</h1>
+
+@foreach (var item in Model.ProductTypes)
+{
+    if (Model.GroupedProducts.Any(p => p.TypeId == item.ProductTypeId))
+    {
+
+        @foreach (var gp in Model.GroupedProducts) {
+            if (gp.TypeId == item.ProductTypeId)
+            {
+            <h3>
+                <a asp-action="Details" asp-route-id="@item.ProductTypeId">@Html.DisplayFor(modelItem => gp.TypeName)</a>   
+                (@Html.DisplayFor(modelItem => gp.ProductCount))
+            </h3>
+            <ul>
+                @{
+                    foreach (var product in gp.Products)
+                    {
+
+                        <li>
+                                            <a asp-action="Details" asp-route-id="@product.ProductId">@Html.DisplayFor(modelItem => product.Title)</a>
+                        </li>
+
+                    }
+                }
+            </ul>
+                            }
+                        }
+                    }
+    else
+    {
+        <h3>
+            @Html.DisplayFor(modelItem => item.Label) (0)
+        </h3>
+    }
+}
+
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
