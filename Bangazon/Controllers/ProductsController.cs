@@ -30,10 +30,21 @@ namespace Bangazon.Controllers
 
         // The product index view has been changed to show the 20 products needed for the homepage model. 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
+            ViewData["CurrentFilter"] = searchString;
+
             var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
-            return View(await applicationDbContext.OrderBy(p => p.DateCreated).Take(20).ToListAsync());
+            var products = applicationDbContext.OrderBy(p => p.DateCreated).Take(20);
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                products = products.Where(p => p.Title.ToUpper().Contains(searchString.ToUpper())
+                                       || p.City.ToUpper().Contains(searchString.ToUpper()));
+            }
+
+
+            return View(await products.ToListAsync());
         }
 
         // GET: Products/Details/5
