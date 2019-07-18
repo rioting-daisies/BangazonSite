@@ -28,11 +28,12 @@ namespace Bangazon.Controllers
         // This method will be called every time we need to get the current user
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
+        // The product index view has been changed to show the 20 products needed for the homepage model. 
         // GET: Products
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
-            return View(await applicationDbContext.ToListAsync());
+            return View(await applicationDbContext.OrderBy(p => p.DateCreated).Take(20).ToListAsync());
         }
 
         // GET: Products/Details/5
@@ -182,6 +183,29 @@ namespace Bangazon.Controllers
             _context.Product.Remove(product);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Types()
+        {
+            var model = new ProductTypesViewModel();
+
+            // Build list of Product instances for display in view
+            // LINQ is awesome
+            model.GroupedProducts = await (
+                from t in _context.ProductType
+                join p in _context.Product
+                on t.ProductTypeId equals p.ProductTypeId
+                group new { t, p } by new { t.ProductTypeId, t.Label } into grouped
+                select new GroupedProducts
+                {
+                    TypeId = grouped.Key.ProductTypeId,
+                    TypeName = grouped.Key.Label,
+                    ProductCount = grouped.Select(x => x.p.ProductId).Count(),
+                    Products = grouped.Select(x => x.p).Take(3)
+                }).ToListAsync();
+            model.ProductTypes = await (_context.ProductType.ToListAsync());
+
+            return View(model);
         }
 
         private bool ProductExists(int id)
