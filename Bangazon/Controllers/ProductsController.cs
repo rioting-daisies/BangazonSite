@@ -19,6 +19,7 @@ namespace Bangazon.Controllers
             _context = context;
         }
 
+        // The product index view has been changed to show the 20 products needed for the homepage model. 
         // GET: Products
         public async Task<IActionResult> Index()
         {

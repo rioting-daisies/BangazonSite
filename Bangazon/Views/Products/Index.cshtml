@@ -1,4 +1,6 @@
-﻿@model IEnumerable<Bangazon.Models.Product>
+﻿@* Author: Brian Jobe; View has been edited to show featured products and serve as homepage for bangzon site. *@
+
+@model IEnumerable<Bangazon.Models.Product>
 
 @{
     ViewData["Title"] = "Index";
@@ -11,13 +13,13 @@
 <table class="table">
     <thead>
         <tr>
-
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Title)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+
             <th>
                 @Html.DisplayNameFor(model => model.Price)
             </th>
@@ -31,13 +33,13 @@
         @foreach (var item in Model)
         {
         <tr>
-
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)
             </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
