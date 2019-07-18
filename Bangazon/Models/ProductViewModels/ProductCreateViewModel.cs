@@ -12,7 +12,21 @@ namespace Bangazon.Models.ProductViewModels
 
         public List<ProductType> AvailableProductTypes { get; set; }
 
-        public List<SelectListItem> ProductTypeOptions => AvailableProductTypes?.Select(p => new SelectListItem(p.Label, p.ProductTypeId.ToString())).ToList();
+        public List<SelectListItem> ProductTypeOptions
+        {
+            get
+            {
+                if(AvailableProductTypes == null)
+                {
+                    return null;
+                }
+                var pt = AvailableProductTypes?.Select(p => new SelectListItem(p.Label, p.ProductTypeId.ToString())).ToList();
+                pt.Insert(0, new SelectListItem("Select Product Type", null));
 
+                return pt;
+            }
+        }
+
+        
     }
 }
