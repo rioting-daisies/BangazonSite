@@ -78,21 +78,23 @@ namespace Bangazon.Controllers
         [Authorize]
         public async Task<IActionResult> Create(ProductCreateViewModel viewModel)
         {
+            //ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
+            //ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
+            ModelState.Remove("Product.ProductType");
+            ModelState.Remove("Product.User");
+            ModelState.Remove("Product.UserId");
+
             if (ModelState.IsValid)
             {
+                var product = viewModel.Product;
+                var currUser = await GetCurrentUserAsync();
+                product.UserId = currUser.Id;
                 _context.Add(product);
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            //ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
-            //ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
-
-            ModelState.Remove("Product.ProductType");
-            ModelState.Remove("Product.Owner");
-            ModelState.Remove("Product.OwnerId");
-
-
-
+            viewModel.AvailableProductTypes = await _context.ProductType.ToListAsync();
             return View(viewModel);
         }
 
