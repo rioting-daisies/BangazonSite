@@ -3,7 +3,7 @@
     ViewData["Title"] = "Types";
 }
 <h1>Product Types</h1>
-
+<hr />
 @foreach (var item in Model.ProductTypes)
 {
     if (Model.GroupedProducts.Any(p => p.TypeId == item.ProductTypeId))
@@ -13,30 +13,29 @@
         {
             if (gp.TypeId == item.ProductTypeId)
             {
-                <h3>
+                <h4>
                     <a asp-action="Details" asp-controller="ProductTypes" asp-route-id="@item.ProductTypeId">@Html.DisplayFor(modelItem => gp.TypeName)</a>
                     (@Html.DisplayFor(modelItem => gp.ProductCount))
-                </h3>
-                <ul>
-                    @{
-                        foreach (var product in gp.Products)
+                </h4>
+                <hr />
+                    @foreach (var product in gp.Products)
                         {
 
-                            <li>
+                            <p>
                                 <a asp-action="Details" asp-route-id="@product.ProductId">@Html.DisplayFor(modelItem => product.Title)</a>
-                            </li>
+                            </p>
 
                         }
-                    }
-                </ul>
+                    <hr />
             }
         }
     }
     else
     {
-        <h3>
+        <h4>
             <a asp-action="Details" asp-controller="ProductTypes" asp-route-id="@item.ProductTypeId">@Html.DisplayFor(modelItem => item.Label)</a> (0)
-        </h3>
+        </h4>
+        <hr />
     }
 }
 
