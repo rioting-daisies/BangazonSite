@@ -17,6 +17,6 @@ namespace Bangazon.Models
     [NotMapped]
     public int Quantity { get; set; }
 
-    public virtual ICollection<Product> Products { get; set; }
-  }
+        public virtual ICollection<Product> Products { get; set; }
+    }
 }
