@@ -29,6 +29,8 @@ namespace Bangazon.Controllers
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
         // The product index view has been changed to show the 20 products needed for the homepage model. 
+        // The index controller also adds a search bar, with a dropdown filter to allow searches by city,
+        // product name, or both.
         // GET: Products
         public async Task<IActionResult> Index(string searchString, string SearchBar)
         {
