@@ -35,7 +35,7 @@
             @Html.DisplayFor(model => model.Price)
         </dd>
     </dl>
-    <button class="btn btn-primary">Add to Order</button>
+    <a asp-controller="Orders" asp-action="Purchase" asp-route-id="@Model.ProductId">Purchase</a>
 </div>
 <div>
     <a asp-action="Index">Home</a> |
