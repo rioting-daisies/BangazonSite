@@ -51,7 +51,7 @@ namespace Bangazon.Controllers
 
             if (order == null)
             {
-                return NotFound();
+                return View("EmptyCart");
             }
             
         
