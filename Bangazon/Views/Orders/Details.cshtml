@@ -4,17 +4,16 @@
     ViewData["Title"] = "Details";
 }
     <div>
-        <h1>Details</h1>
+        <h1>Shopping Cart</h1>
 
 
         <h4>Order</h4>
-        <hr />
         <table class="table">
             <thead>
                 <tr>
-                    <th>
+                    @*<th>
                         @Html.DisplayNameFor(model => model.Order.DateCreated)
-                    </th>
+                    </th>*@
                     <th>
                         @Html.DisplayNameFor(model => model.OrderProduct.Product.Title)
                     </th>
@@ -22,7 +21,7 @@
                         @Html.DisplayNameFor(model => model.OrderProduct.Product.Price)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.OrderProduct.Product.Quantity)
+                        Unit
                     </th>
                     <th></th>
                 </tr>
@@ -31,22 +30,22 @@
                 @foreach (var item in Model.LineItems)
                 {
                     <tr>
-                        <td>
+                        @*<td>
                             @Html.DisplayFor(modelItem => item.Product.DateCreated)
-                        </td>
+                        </td>*@
                         <td>
                             @Html.DisplayFor(modelItem => item.Product.Title)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Product.Price)
+                            @Html.DisplayFor(modelItem => item.Cost)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Product.Quantity)
+                            @Html.DisplayFor(modelItem => item.Units)
                         </td>
                         <td>
-                            @*/*<a asp-action="Edit" asp-route-id="@item.OrderId">Edit</a> |
-                            <a asp-action="Details" asp-route-id="@item.OrderId">Details</a> |
-                            <a asp-action="Delete" asp-route-id="@item.OrderId">Delete</a>*/*@
+                            @*<a asp-action="Edit" asp-route-id="@item.OrderId">Edit</a> |*@
+                            @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@item.OrderId">Delete</a>*@
                         </td>
                     </tr>
                 }
