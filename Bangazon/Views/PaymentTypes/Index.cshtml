@@ -4,17 +4,15 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+    <h1>Payment Options</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Add new payment type</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.DateCreated)
-            </th>
+
             <th>
                 @Html.DisplayNameFor(model => model.Description)
             </th>
@@ -22,7 +20,7 @@
                 @Html.DisplayNameFor(model => model.AccountNumber)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.User)
+                @Html.DisplayNameFor(model => model.DateCreated)
             </th>
             <th></th>
         </tr>
@@ -30,9 +28,7 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateCreated)
-            </td>
+
             <td>
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
@@ -40,11 +36,9 @@
                 @Html.DisplayFor(modelItem => item.AccountNumber)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.User.Id)
+                @Html.DisplayFor(modelItem => item.DateCreated)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.PaymentTypeId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PaymentTypeId">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.PaymentTypeId">Delete</a>
             </td>
         </tr>
