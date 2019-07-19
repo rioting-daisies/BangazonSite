@@ -86,6 +86,7 @@ namespace Bangazon.Controllers
         }
 
         // GET: PaymentTypes/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -107,6 +108,7 @@ namespace Bangazon.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("PaymentTypeId,DateCreated,Description,AccountNumber,UserId")] PaymentType paymentType)
         {
             if (id != paymentType.PaymentTypeId)
@@ -139,16 +141,23 @@ namespace Bangazon.Controllers
         }
 
         // GET: PaymentTypes/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
+            var currentUser = GetCurrentUserAsync().Result;
 
             var paymentType = await _context.PaymentType
                 .Include(p => p.User)
                 .FirstOrDefaultAsync(m => m.PaymentTypeId == id);
+            if (paymentType.UserId != currentUser.Id)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
             if (paymentType == null)
             {
                 return NotFound();
