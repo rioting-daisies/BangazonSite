@@ -37,8 +37,10 @@ namespace Bangazon.Controllers
             ViewData["CurrentFilter"] = searchString;
             ViewData["SearchBar"] = SearchBar;
 
+            var currentUser = GetCurrentUserAsync().Result;
+
             var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
-            var products = applicationDbContext.OrderBy(p => p.DateCreated).Take(20);
+            var products = applicationDbContext.OrderByDescending(p => p.DateCreated).Take(20);
 
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -212,11 +214,12 @@ namespace Bangazon.Controllers
 
         public async Task<IActionResult> Types()
         {
-            var model = new ProductTypesViewModel();
+            var model = new ProductTypesViewModel
+            {
 
-            // Build list of Product instances for display in view
-            // LINQ is awesome
-            model.GroupedProducts = await (
+                // Build list of Product instances for display in view
+                // LINQ is awesome
+                GroupedProducts = await (
                 from t in _context.ProductType
                 join p in _context.Product
                 on t.ProductTypeId equals p.ProductTypeId
@@ -227,10 +230,20 @@ namespace Bangazon.Controllers
                     TypeName = grouped.Key.Label,
                     ProductCount = grouped.Select(x => x.p.ProductId).Count(),
                     Products = grouped.Select(x => x.p).Take(3)
-                }).ToListAsync();
-            model.ProductTypes = await (_context.ProductType.ToListAsync());
+                }).ToListAsync(),
+                ProductTypes = await (_context.ProductType.ToListAsync())
+            };
 
             return View(model);
+        }
+        [Authorize]
+        public async Task<IActionResult> MyProducts()
+        {
+            var currentUser = GetCurrentUserAsync().Result;
+            var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
+            var products = applicationDbContext.Where(p => p.UserId == currentUser.Id).OrderByDescending(p => p.DateCreated);
+
+            return View(await products.ToListAsync());
         }
 
         private bool ProductExists(int id)
