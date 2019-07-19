@@ -4,31 +4,35 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+
 using Bangazon.Data;
+
 using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Bangazon.Areas.Identity.Pages.Account.Manage
 {
     public partial class IndexModel : PageModel
     {
         private readonly ApplicationDbContext _context;
-
-        
-
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
 
+
         public IndexModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender, ApplicationDbContext context)
+
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+
             _context = context; 
         }
 
@@ -51,11 +55,13 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
             public string FirstName { get; set;  }
             public string LastName { get; set;  }
             public string Address { get; set;  }
             public string Password { get; set; }
             public List<PaymentType> paymentType { get; set;  }
+
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -69,6 +75,7 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var email = await _userManager.GetEmailAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+
             string FirstName = user.FirstName;
             var LastName = user.LastName;
             var Address = user.StreetAddress;
@@ -87,6 +94,7 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
                 LastName = LastName,
                 Address = Address,
                 paymentType = paymentType
+
             };
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
@@ -95,11 +103,13 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
         }
 
 
+
         public async Task<IActionResult> OnPostAsync()
         {
             ModelState.Remove("FirstName");
             ModelState.Remove("LastName");
             ModelState.Remove("StreetAddress");
+
             if (!ModelState.IsValid)
             {
                 return Page();
@@ -133,6 +143,7 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
                 }
             }
 
+
             ////////////////////////////////////////////////////////////
             ///
             ModelState.Remove("FirstName");
@@ -158,6 +169,7 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
 
 
             }
+
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";

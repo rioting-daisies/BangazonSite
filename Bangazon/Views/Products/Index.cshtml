@@ -1,4 +1,7 @@
-﻿@* Author: Brian Jobe; View has been edited to show featured products and serve as homepage for bangzon site. *@
+﻿@* Author: Brian Jobe; View has been edited to show featured products and serve as homepage for bangzon site.
+    A search bar has been added, as well as a dropdown menu to specify search constraints. Once a search has been performed,
+    the "currentFilter" will be shown as the search string, and a conditionally rendered button will be added to go back to the
+    initial view. If a search is based on the city, the city name will be added to the product information view. *@
 
 @model IEnumerable<Bangazon.Models.Product>
 
@@ -13,12 +16,32 @@
 <form asp-action="Index" method="get">
     <div class="form-actions no-color">
         <p>
-            Search for products by name or location: <input type="text" name="SearchString" value="@ViewData["currentFilter"]" />
-            <input type="submit" value="Search" class="btn btn-default" /> |
-            <a asp-action="Index">Back to Full List</a>
+            Search for products by name or location:
+            <div class="form-group">
+                <label for="SearchBar" class="control-label"></label>
+                <select for="SearchBar" class="form-control" name="SearchBar" value=@ViewData["SearchBar"]>
+                    <option value="0">All</option>
+                    <option value="1">City</option>
+                    <option value="2">Product Name</option>
+                </select>
+
+            </div>
+
+            <input type="text" name="SearchString" value="@ViewData["currentFilter"]" />
+            <input type="submit" value="Search" class="btn btn-default" />
+            @{ if (ViewData["currentFilter"] != null)
+                {<a asp-action="Index">Back to Full List</a>
+                }
+            }
         </p>
     </div>
 </form>
+
+@{ if (ViewData["currentFilter"] != null)
+    {
+    <h4>Search results for "@ViewData["currentFilter"]"</h4>
+    }
+}
 
 <table class="table">
     <thead>
@@ -33,23 +56,39 @@
             <th>
                 @Html.DisplayNameFor(model => model.Price)
             </th>
+
+            @{ if (ViewData["SearchBar"] != null && ViewData["SearchBar"].ToString() == "1")
+                {
+                    <th>
+                        @Html.DisplayNameFor(model => model.City)
+                    </th>
+                }
+            }
+
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-        <tr>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title)</a> 
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-        </tr>
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title)</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                @{ if (ViewData["SearchBar"] != null && ViewData["SearchBar"].ToString() == "1")
+                    {
+                        <th>
+                            @Html.DisplayFor(modelItem => item.City)
+                        </th>
+                    }
+                }
+            </tr>
         }
     </tbody>
 </table>
