@@ -3,47 +3,55 @@
 @{
     ViewData["Title"] = "Details";
 }
-    <div>
-        <h1>Shopping Cart</h1>
+<div>
+    <h1>Shopping Cart</h1>
 
-        
-        <h4>Order</h4>
-        <table class="table">
-            <thead>
+
+    <h4>Current Order</h4>
+    <table class="table">
+        <thead>
+            <tr>
+
+                <th>
+                    @Html.DisplayNameFor(model => model.Product.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Product.Price)
+                </th>
+                <th>
+                    Unit
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderProducts)
+            {
                 <tr>
 
-                    <th>
-                        @Html.DisplayNameFor(model => model.Product.Title)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Product.Price)
-                    </th>
-                    <th>
-                        Unit
-                    </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.OrderProducts)
-                    {
-                    <tr>
-
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Product.Title)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Product.Price)
-                        </td>
-                        @*<td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product.Price)
+                    </td>
+                    @*<td>
                             @Html.DisplayFor(modelItem => item.Units)
                         </td>*@
                     <td>
                         <a asp-action="Details" asp-controller="Products" asp-route-id="@item.Product.ProductId">Details</a> |
                         <a asp-action="Remove" asp-route-id="@item.OrderProductId"> Remove from cart </a>
                     </td>
-                    </tr>
-                        }
-            </tbody>
-        </table>
-    </div>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="btn btn-secondary">
+    <a href='javascript:history.go(-1)'>Go Back</a>
+</div>
+|
+<form asp-action="Edit">
+    <input type="hidden" asp-for="@Model.Order.OrderId" />
+    <input type="submit" value="Checkout" class="btn btn-primary" /> 
+</form>

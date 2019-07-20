@@ -114,13 +114,16 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Order.FindAsync(id);
+            var order = await _context.Order.Include(o => o.PaymentType)
+                .Include(o => o.User).Include(o => o.OrderProducts)
+                .FirstOrDefaultAsync(m => m.OrderId == id);
+
             if (order == null)
             {
                 return NotFound();
             }
             ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber", order.PaymentTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", order.UserId);
+
             return View(order);
         }
 
@@ -129,17 +132,23 @@ namespace Bangazon.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OrderId,DateCreated,DateCompleted,UserId,PaymentTypeId")] Order order)
+        public async Task<IActionResult> Edit(int id, [Bind("PaymentTypeId")] Order order)
         {
             if (id != order.OrderId)
             {
                 return NotFound();
             }
+            var currentUser = GetCurrentUserAsync().Result;
+
+            ModelState.Remove("order.User");
+            ModelState.Remove("order.UserId");
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    order.UserId = currentUser.Id;
+                    order.DateCompleted = DateTime.Now;
                     _context.Update(order);
                     await _context.SaveChangesAsync();
                 }
@@ -157,7 +166,7 @@ namespace Bangazon.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber", order.PaymentTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", order.UserId);
+
             return View(order);
         }
 
@@ -257,7 +266,7 @@ namespace Bangazon.Controllers
             }
             
 
-          
+            
 
 
             OrderProduct item = new OrderProduct();
