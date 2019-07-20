@@ -49,7 +49,7 @@ namespace Bangazon.Controllers
                  .ThenInclude(op => op.Product)
                 .FirstOrDefaultAsync(m => m.UserId == currentuser.Id.ToString() && m.PaymentTypeId == null);
 
-            if (order == null)
+            if (order == null || order.OrderProducts.Count() == 0)
             {
                 return View("EmptyCart");
             }
@@ -60,6 +60,8 @@ namespace Bangazon.Controllers
             viewmodel.Order = order;
 
             OrderLineItem LineItem = new OrderLineItem();
+
+            viewmodel.OrderProducts = order.OrderProducts.ToList();
 
             viewmodel.LineItems = order.OrderProducts
                  .GroupBy(op => op.Product)
@@ -191,41 +193,77 @@ namespace Bangazon.Controllers
         }
 
 
+        public async Task<IActionResult> Remove(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var orderProduct = await _context.OrderProduct
+                .Include(o => o.Product)
+                .FirstOrDefaultAsync(m => m.OrderProductId == id);
+            if (orderProduct == null)
+            {
+                return NotFound();
+            }
+
+            return View(orderProduct);
+        }
+
+        // POST: Orders/Remove/5
+        [HttpPost, ActionName("Remove")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveConfirmed(int id)
+        {
+            var orderProduct = await _context.OrderProduct.FindAsync(id);
+            Product productToEdit = await _context.Product.SingleOrDefaultAsync(p => p.ProductId == orderProduct.ProductId);
+            productToEdit.Quantity += 1;
+            _context.Product.Update(productToEdit);
+            _context.OrderProduct.Remove(orderProduct);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details));
+        }
+
         [Authorize]
-        public async Task<IActionResult> Purchase([FromRoute] int id)
+        public async Task<IActionResult> AddToCart([FromRoute] int id)
         {
             // Find the product requested
             Product productToAdd = await _context.Product.SingleOrDefaultAsync(p => p.ProductId == id);
+            if (productToAdd.Quantity == 0)
+            {
+                return NotFound();
+            }
 
             // Get the current user
             var user = await GetCurrentUserAsync();
 
             // See if the user has an open order
-            var openOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+            var order = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
 
-            Order currentOrder = new Order();
+
             // If no order, create one, else add to existing order
 
-            if (openOrder == null)
+            if (order == null)
             {
+                order = new Order()
+                {
+                    UserId = user.Id,
+                    PaymentType = null,
+                };
 
-                currentOrder.UserId = user.Id;
-                currentOrder.PaymentType = null;
-                _context.Add(currentOrder);
+                _context.Add(order);
                 await _context.SaveChangesAsync();
-
-
-
             }
-            else
-            {
-                currentOrder = openOrder;
-            }
+            
+
+          
+
 
             OrderProduct item = new OrderProduct();
 
             productToAdd.Quantity = productToAdd.Quantity - 1;
-            item.OrderId = currentOrder.OrderId;
+            item.OrderId = order.OrderId;
             item.ProductId = productToAdd.ProductId;
 
 
@@ -235,6 +273,7 @@ namespace Bangazon.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", "Products", new { id = productToAdd.ProductId });
         }
+
         private bool OrderExists(int id)
         {
             return _context.Order.Any(e => e.OrderId == id);
