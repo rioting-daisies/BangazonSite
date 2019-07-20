@@ -47,11 +47,13 @@
         </tbody>
     </table>
 </div>
-<div class="btn btn-secondary">
-    <a href='javascript:history.go(-1)'>Go Back</a>
+
+<div>
+    <div class="btn btn-secondary">
+        <a href='javascript:history.go(-1)'>Go Back</a>
+    </div>
+    |
+    <div class="btn btn-primary">
+        <a asp-action="Edit" asp-route-id="@Model.Order.OrderId">Checkout</a>
+    </div>
 </div>
-|
-<form asp-action="Edit">
-    <input type="hidden" asp-for="@Model.Order.OrderId" />
-    <input type="submit" value="Checkout" class="btn btn-primary" /> 
-</form>
