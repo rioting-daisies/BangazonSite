@@ -202,38 +202,6 @@ namespace Bangazon.Controllers
         }
 
 
-        public async Task<IActionResult> Remove(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var orderProduct = await _context.OrderProduct
-                .Include(o => o.Product)
-                .FirstOrDefaultAsync(m => m.OrderProductId == id);
-            if (orderProduct == null)
-            {
-                return NotFound();
-            }
-
-            return View(orderProduct);
-        }
-
-        // POST: Orders/Remove/5
-        [HttpPost, ActionName("Remove")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveConfirmed(int id)
-        {
-            var orderProduct = await _context.OrderProduct.FindAsync(id);
-            Product productToEdit = await _context.Product.SingleOrDefaultAsync(p => p.ProductId == orderProduct.ProductId);
-            productToEdit.Quantity += 1;
-            _context.Product.Update(productToEdit);
-            _context.OrderProduct.Remove(orderProduct);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Details));
-        }
-
         [Authorize]
         public async Task<IActionResult> AddToCart([FromRoute] int id)
         {
@@ -265,10 +233,6 @@ namespace Bangazon.Controllers
                 await _context.SaveChangesAsync();
             }
             
-
-            
-
-
             OrderProduct item = new OrderProduct();
 
             productToAdd.Quantity = productToAdd.Quantity - 1;

@@ -11,7 +11,6 @@
     <table class="table">
         <thead>
             <tr>
-
                 <th>
                     @Html.DisplayNameFor(model => model.Product.Title)
                 </th>
@@ -25,7 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.OrderProducts)
+            @foreach (var item in Model.LineItems)
             {
                 <tr>
 
@@ -33,14 +32,15 @@
                         @Html.DisplayFor(modelItem => item.Product.Title)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Product.Price)
+                        @Html.DisplayFor(modelItem => item.Cost)
                     </td>
-                    @*<td>
-                            @Html.DisplayFor(modelItem => item.Units)
-                        </td>*@
                     <td>
-                        <a asp-action="Details" asp-controller="Products" asp-route-id="@item.Product.ProductId">Details</a> |
-                        <a asp-action="Remove" asp-route-id="@item.OrderProductId"> Remove from cart </a>
+                        @Html.DisplayFor(modelItem => item.Units)
+                    </td>
+                    <td>
+
+                        @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.OrderId">Delete</a>*@
                     </td>
                 </tr>
             }
