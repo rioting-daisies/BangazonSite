@@ -25,7 +25,8 @@ namespace Bangazon.Models
     [Required]
     public ApplicationUser User { get; set; }
 
-    public int? PaymentTypeId {get;set;}
+        [Display(Name = "Payment Options")]
+        public int? PaymentTypeId {get;set;}
     public PaymentType PaymentType {get;set;}
 
     public virtual ICollection<OrderProduct> OrderProducts { get; set; }

@@ -2,6 +2,8 @@
     A search bar has been added, as well as a dropdown menu to specify search constraints. Once a search has been performed,
     the "currentFilter" will be shown as the search string, and a conditionally rendered button will be added to go back to the
     initial view. If a search is based on the city, the city name will be added to the product information view. *@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
 
 @model IEnumerable<Bangazon.Models.Product>
 
@@ -39,7 +41,7 @@
 
 @{ if (ViewData["currentFilter"] != null)
     {
-    <h4>Search results for "@ViewData["currentFilter"]"</h4>
+        <h4>Search results for "@ViewData["currentFilter"]"</h4>
     }
 }
 
@@ -71,24 +73,45 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
+        <tr>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var currentUser = SignInManager.UserManager.GetUserId(User);
+                if (item.UserId == currentUser)
+                {
+            <td>
+                <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title) </a> (My listing)
+            </td>
+                }
+                else
+                {
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title)</a>
+                    </td>
+                }
+
+            }
+
+            else
+            {
                 <td>
                     <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title)</a>
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Price)
-                </td>
-                @{ if (ViewData["SearchBar"] != null && ViewData["SearchBar"].ToString() == "1")
-                    {
-                        <th>
-                            @Html.DisplayFor(modelItem => item.City)
-                        </th>
-                    }
+            }
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            @{ if (ViewData["SearchBar"] != null && ViewData["SearchBar"].ToString() == "1")
+                {
+                    <th>
+                        @Html.DisplayFor(modelItem => item.City)
+                    </th>
                 }
-            </tr>
+            }
+        </tr>
         }
     </tbody>
 </table>

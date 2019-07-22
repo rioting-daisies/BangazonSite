@@ -31,8 +31,8 @@ namespace Bangazon.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var currentUser = GetCurrentUserAsync();
-            var applicationDbContext = _context.PaymentType.Include(p => p.User).Where(p => p.UserId == currentUser.Result.Id);
+            var currentUser = await GetCurrentUserAsync();
+            var applicationDbContext = _context.PaymentType.Include(p => p.User).Where(p => p.UserId == currentUser.Id);
             return View(await applicationDbContext.ToListAsync());
         }
 

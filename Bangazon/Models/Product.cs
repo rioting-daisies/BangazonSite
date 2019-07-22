@@ -17,14 +17,14 @@ namespace Bangazon.Models
         public DateTime DateCreated {get;set;}
 
         [Required]
-        [StringLength(255)]
-        [RegularExpression(@"^[^!@#$%^&*()]+$", ErrorMessage ="No special charaters are allowed")]
-        public string Description { get; set; }
+        [StringLength(55, ErrorMessage = "Please shorten the product title to 55 characters")]
+        [RegularExpression(@"^[^!@#$%^&*()]+$", ErrorMessage = "No special characters are allowed")]
+        public string Title { get; set; }
 
         [Required]
-        [StringLength(55, ErrorMessage="Please shorten the product title to 55 characters")]
-        [RegularExpression(@"^[^!@#$%^&*()]+$", ErrorMessage = "No special charaters are allowed")]
-        public string Title { get; set; }
+        [StringLength(255)]
+        [RegularExpression(@"^[^!@#$%^&*()]+$", ErrorMessage ="No special characters are allowed")]
+        public string Description { get; set; }
 
         [Required]
         [Range(0, 10000.00)]
@@ -32,6 +32,7 @@ namespace Bangazon.Models
         public double Price { get; set; }
 
         [Required]
+        [Range(0, 1000)]
         public int Quantity { get; set; }
 
         [Required]

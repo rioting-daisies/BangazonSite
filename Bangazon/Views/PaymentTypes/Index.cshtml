@@ -1,13 +1,20 @@
-﻿@model IEnumerable<Bangazon.Models.PaymentType>
+﻿@using Bangazon.Areas.Identity.Pages.Account.Manage
+
+@model IEnumerable<Bangazon.Models.PaymentType>
 
 @{
     ViewData["Title"] = "Index";
 }
 
-    <h1>Payment Options</h1>
+<h1>Payment Options</h1>
 
 <p>
     <a asp-action="Create">Add new payment type</a>
+</p>
+<p>
+    <a class="nav-link" asp-area="Identity"
+       asp-page="/Account/Manage/Index"
+       title="Manage">Back to Profile</a>
 </p>
 <table class="table">
     <thead>
@@ -26,22 +33,23 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
+        @foreach (var item in Model)
+        {
+            <tr>
 
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AccountNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateCreated)
-            </td>
-            <td>
-                <a asp-action="Delete" asp-route-id="@item.PaymentTypeId">Delete</a>
-            </td>
-        </tr>
-}
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AccountNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateCreated)
+                </td>
+                <td>
+                    <a asp-action="Delete" asp-route-id="@item.PaymentTypeId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
