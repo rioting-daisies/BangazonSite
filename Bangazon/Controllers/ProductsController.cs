@@ -246,11 +246,6 @@ namespace Bangazon.Controllers
             return View(await products.ToListAsync());
         }
 
-        //this is the delete method that will delete a product from the user's shopping cart
-
-        public async Task<IActionResult>DeleteShoppingCartItem(){
-
-        }
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);

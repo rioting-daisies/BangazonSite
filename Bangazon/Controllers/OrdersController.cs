@@ -59,6 +59,7 @@ namespace Bangazon.Controllers
 
             viewmodel.Order = order;
 
+
             OrderLineItem LineItem = new OrderLineItem();
 
             viewmodel.LineItems = order.OrderProducts
@@ -235,6 +236,31 @@ namespace Bangazon.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", "Products", new { id = productToAdd.ProductId });
         }
+
+
+        //this is the delete method that will delete a product from the user's shopping cart
+        public async Task<IActionResult> DeleteShoppingCartItem(int orderId, int productId)
+        {
+            var currentuser = await GetCurrentUserAsync();
+
+            var order = await _context.Order
+                .Include(o => o.PaymentType)
+                .Include(o => o.User)
+                .Include(o => o.OrderProducts)
+                 .ThenInclude(op => op.Product)
+                .FirstOrDefaultAsync(m => m.UserId == currentuser.Id.ToString() && m.PaymentTypeId == null);
+
+
+            var orderProduct = _context.OrderProduct
+                .Where(op => op.OrderId == orderId && op.ProductId == productId)
+                .FirstOrDefault();
+
+            _context.Remove(orderProduct);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details));
+        }
+
         private bool OrderExists(int id)
         {
             return _context.Order.Any(e => e.OrderId == id);
