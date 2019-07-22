@@ -49,6 +49,9 @@
 </div>
 
 <div>
+    <div>
+        <a asp-action="Delete" asp-route-id="@Model.Order.OrderId">Cancel Order</a>
+    </div>
     <div class="btn btn-secondary">
         <a href='javascript:history.go(-1)'>Go Back</a>
     </div>
