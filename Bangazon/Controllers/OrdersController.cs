@@ -177,24 +177,51 @@ namespace Bangazon.Controllers
             return View(order);
         }
 
+
+        //////////////////////////////Created by Alex
         // GET: Orders/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var currentuser = await GetCurrentUserAsync();
 
             var order = await _context.Order
                 .Include(o => o.PaymentType)
                 .Include(o => o.User)
-                .FirstOrDefaultAsync(m => m.OrderId == id);
+                .Include(o => o.OrderProducts)
+                 .ThenInclude(op => op.Product)
+                 .Where(o => o.OrderId == id)
+                .FirstOrDefaultAsync(m => m.UserId == currentuser.Id.ToString() && m.PaymentTypeId == null);
+
+            if (order == null || order.OrderProducts.Count() == 0)
+            {
+                return NotFound();
+            }
+
+
+            OrderDetailViewModel viewmodel = new OrderDetailViewModel
+            {
+                Order = order
+            };
+
+            //OrderLineItem LineItem = new OrderLineItem();
+
+            viewmodel.LineItems = order.OrderProducts
+                 .GroupBy(op => op.Product)
+                 .Select(p => new OrderLineItem
+                 {
+                     Product = p.Key,
+                     Units = p.Select(l => l.Product).Count(),
+                     Cost = p.Key.Price * p.Select(l => l.ProductId).Count()
+                 }).ToList();
+
+
+
             if (order == null)
             {
                 return NotFound();
             }
 
-            return View(order);
+            return View(viewmodel);
         }
 
         // POST: Orders/Delete/5
@@ -204,8 +231,21 @@ namespace Bangazon.Controllers
         {
             var order = await _context.Order.FindAsync(id);
             _context.Order.Remove(order);
+            //await _context.SaveChangesAsync();
+
+            var productOrder = _context.OrderProduct
+                .Where(op => op.OrderId == id)
+                .Select(op => op.OrderProductId);
+
+            foreach (var po in productOrder)
+            {
+            var deleteProductOrder = await _context.OrderProduct.FindAsync(po);
+            _context.OrderProduct.Remove(deleteProductOrder);
+
+            }
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return View("EmptyCart");
         }
 
         /////////When user clicks his account info, clicks into order history, clicks details on a past order, user will be shown this --
