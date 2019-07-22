@@ -10,6 +10,7 @@ using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ProductViewModels;
+using Bangazon.ViewComponents;
 
 namespace Bangazon.Controllers
 {
@@ -18,7 +19,7 @@ namespace Bangazon.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProductsController(ApplicationDbContext context, 
+        public ProductsController(ApplicationDbContext context,
             UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -79,6 +80,10 @@ namespace Bangazon.Controllers
             {
                 return NotFound();
             }
+
+            int count = await GetItemsAsync(product.ProductId);
+
+            ViewBag.ProductCount = count;
 
             return View(product);
         }
@@ -249,6 +254,25 @@ namespace Bangazon.Controllers
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);
+        }
+
+        private async Task<int> GetItemsAsync(int productId)
+        {
+            var user = await GetCurrentUserAsync();
+
+            // See if the user has an open order
+            var openOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+
+            var product = await _context.Product.Where(p => p.ProductId == productId).SingleOrDefaultAsync();
+
+            if (openOrder == null)
+            {
+                return product.Quantity;
+            }
+            var cartList = await _context.OrderProduct.Where(op => op.OrderId == openOrder.OrderId && op.ProductId == product.ProductId).ToListAsync();
+            int productCount = product.Quantity - cartList.Count();
+
+            return productCount;
         }
     }
 }

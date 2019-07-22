@@ -50,7 +50,7 @@ namespace Bangazon.Controllers
                 .Include(o => o.User)
                 .Include(o => o.OrderProducts)
                  .ThenInclude(op => op.Product)
-                .FirstOrDefaultAsync(m => m.UserId == currentuser.Id.ToString() && m.PaymentTypeId == null);
+                .FirstOrDefaultAsync(m => m.User == currentuser && m.PaymentTypeId == null);
 
             if (order == null || order.OrderProducts.Count() == 0)
             {
@@ -109,26 +109,51 @@ namespace Bangazon.Controllers
         //}
 
         // GET: Orders/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
-            var order = await _context.Order.FindAsync(id);
+            var currentuser = await GetCurrentUserAsync();
+            var order = await _context.Order
+                    .Include(o => o.User).ThenInclude(u => u.PaymentTypes)
+                    .Include(o => o.OrderProducts)
+                        .ThenInclude(op => op.Product)
+                    .FirstOrDefaultAsync(o => o.User == currentuser && o.OrderId == id);
             if (order == null)
             {
                 return NotFound();
             }
-            var paymentTypes = _context.PaymentType.Where(p => p.UserId == order.UserId);
 
-            if (paymentTypes.Count() == 0)
+            OrderDetailViewModel model = new OrderDetailViewModel
+            {
+                LineItems = order.OrderProducts
+                 .GroupBy(op => op.Product)
+                 .Select(p => new OrderLineItem
+                 {
+                     Product = p.Key,
+                     Units = p.Select(l => l.Product).Count(),
+                     Cost = p.Key.Price * p.Select(l => l.ProductId).Count()
+                 }).ToList()
+            };
+            foreach (OrderLineItem orderItem in model.LineItems)
+            {
+                if (orderItem.Units > orderItem.Product.Quantity)
+                {
+                    ViewBag.UnitsOver = orderItem.Units - orderItem.Product.Quantity;
+                    return View("CheckoutError", orderItem);
+                }
+            }
+
+
+            if (order.User.PaymentTypes.Count() == 0)
             {
                 return RedirectToAction("Create", "PaymentTypes");
             }
 
-            ViewData["PaymentTypeId"] = new SelectList(paymentTypes, "PaymentTypeId", "Description", order.PaymentTypeId);
+            ViewData["PaymentTypeId"] = new SelectList(order.User.PaymentTypes, "PaymentTypeId", "Description", order.PaymentTypeId);
 
             return View(order);
         }
@@ -138,7 +163,7 @@ namespace Bangazon.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OrderId,DateCreated,DateCompleted,UserId,PaymentTypeId")] Order order)
+        public async Task<IActionResult> Edit(int id, [Bind("OrderId,DateCreated,DateCompleted,UserId,PaymentTypeId,OrderProducts")] Order order)
         {
             if (id != order.OrderId)
             {
@@ -149,10 +174,20 @@ namespace Bangazon.Controllers
             ModelState.Remove("UserId");
             ModelState.Remove("DateCompleted");
 
+            var orderProducts = await _context.OrderProduct.Where(op => op.OrderId == order.OrderId).ToListAsync();
+
             if (ModelState.IsValid)
             {
                 try
                 {
+
+                    foreach(OrderProduct op in orderProducts)
+                    {
+                        Product product = await _context.Product.Where(p => p.ProductId == op.ProductId).SingleAsync();
+                        product.Quantity -= 1;
+                        _context.Update(product);
+                    }
+
                     order.DateCompleted = DateTime.Now;
                     order.UserId = user.Id;
                     _context.Update(order);
@@ -231,19 +266,18 @@ namespace Bangazon.Controllers
                 _context.Add(currentOrder);
                 await _context.SaveChangesAsync();
 
-
-
             }
+
             else
             {
                 currentOrder = openOrder;
             }
 
-            OrderProduct item = new OrderProduct();
-
-            productToAdd.Quantity = productToAdd.Quantity - 1;
-            item.OrderId = currentOrder.OrderId;
-            item.ProductId = productToAdd.ProductId;
+            OrderProduct item = new OrderProduct
+            {
+                OrderId = currentOrder.OrderId,
+                ProductId = productToAdd.ProductId
+            };
 
 
             /*currentOrder.OrderProducts.Add(item);*/
@@ -257,7 +291,7 @@ namespace Bangazon.Controllers
             return _context.Order.Any(e => e.OrderId == id);
         }
 
-       
+
     }
 
 
