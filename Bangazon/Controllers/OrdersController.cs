@@ -30,13 +30,16 @@ namespace Bangazon.Controllers
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
         // GET: Orders
+        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Order.Include(o => o.PaymentType).Include(o => o.User);
+            var currentUser = await GetCurrentUserAsync();
+            var applicationDbContext = _context.Order.Include(o => o.PaymentType).Include(o => o.User).Where(o=> o.UserId == currentUser.Id);
             return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: Orders/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
 
@@ -49,15 +52,16 @@ namespace Bangazon.Controllers
                  .ThenInclude(op => op.Product)
                 .FirstOrDefaultAsync(m => m.UserId == currentuser.Id.ToString() && m.PaymentTypeId == null);
 
-            if (order == null)
+            if (order == null || order.OrderProducts.Count() == 0)
             {
                 return View("EmptyCart");
             }
-            
-        
-            OrderDetailViewModel viewmodel = new OrderDetailViewModel();
 
-            viewmodel.Order = order;
+
+            OrderDetailViewModel viewmodel = new OrderDetailViewModel
+            {
+                Order = order
+            };
 
 
             OrderLineItem LineItem = new OrderLineItem();
@@ -80,30 +84,30 @@ namespace Bangazon.Controllers
         }
 
         // GET: Orders/Create
-        public IActionResult Create()
-        {
-            ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber");
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
-            return View();
-        }
+        //public IActionResult Create()
+        //{
+        //    ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber");
+        //    ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id");
+        //    return View();
+        //}
 
-        // POST: Orders/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("OrderId,DateCreated,DateCompleted,UserId,PaymentTypeId")] Order order)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(order);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber", order.PaymentTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", order.UserId);
-            return View(order);
-        }
+        //// POST: Orders/Create
+        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create([Bind("OrderId,DateCreated,DateCompleted,UserId,PaymentTypeId")] Order order)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.Add(order);
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber", order.PaymentTypeId);
+        //    ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", order.UserId);
+        //    return View(order);
+        //}
 
         // GET: Orders/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -118,8 +122,15 @@ namespace Bangazon.Controllers
             {
                 return NotFound();
             }
-            ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber", order.PaymentTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", order.UserId);
+            var paymentTypes = _context.PaymentType.Where(p => p.UserId == order.UserId);
+
+            if (paymentTypes.Count() == 0)
+            {
+                return RedirectToAction("Create", "PaymentTypes");
+            }
+
+            ViewData["PaymentTypeId"] = new SelectList(paymentTypes, "PaymentTypeId", "Description", order.PaymentTypeId);
+
             return View(order);
         }
 
@@ -134,11 +145,17 @@ namespace Bangazon.Controllers
             {
                 return NotFound();
             }
+            var user = await GetCurrentUserAsync();
+            ModelState.Remove("User");
+            ModelState.Remove("UserId");
+            ModelState.Remove("DateCompleted");
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    order.DateCompleted = DateTime.Now;
+                    order.UserId = user.Id;
                     _context.Update(order);
                     await _context.SaveChangesAsync();
                 }
@@ -155,8 +172,8 @@ namespace Bangazon.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "AccountNumber", order.PaymentTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", order.UserId);
+            ViewData["PaymentTypeId"] = new SelectList(_context.PaymentType, "PaymentTypeId", "Description", order.PaymentTypeId);
+
             return View(order);
         }
 
@@ -193,7 +210,7 @@ namespace Bangazon.Controllers
 
 
         [Authorize]
-        public async Task<IActionResult> Purchase([FromRoute] int id)
+        public async Task<IActionResult> AddToCart([FromRoute] int id)
         {
             // Find the product requested
             Product productToAdd = await _context.Product.SingleOrDefaultAsync(p => p.ProductId == id);

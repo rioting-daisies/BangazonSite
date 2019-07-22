@@ -8,7 +8,9 @@ namespace Bangazon.Models.OrderViewModels
 
         public OrderProduct OrderProduct { get; set; }
 
-        public IEnumerable<OrderLineItem> LineItems { get; set; }
+        public List<OrderLineItem> LineItems { get; set; }
+
+        public readonly Product Product;
 
     }
 }
