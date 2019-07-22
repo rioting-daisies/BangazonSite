@@ -39,16 +39,18 @@
                     </td>
                     <td>
 
-                        @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.OrderId">Delete</a>*@
+                        @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |*@
+                        <a asp-action="DeleteShoppingCartItem" asp-route-orderId="@Model.Order.OrderId" asp-route-productId="@item.Product.ProductId">Delete</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
-
 <div>
+    <div>
+        <a asp-action="Delete" asp-route-id="@Model.Order.OrderId">Cancel Order</a>
+    </div>
     <div class="btn btn-secondary">
         <a href='javascript:history.go(-1)'>Go Back</a>
     </div>
