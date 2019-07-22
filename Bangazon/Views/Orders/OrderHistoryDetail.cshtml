@@ -1,0 +1,91 @@
+﻿@model Bangazon.Models.OrderViewModels.OrderDetailViewModel;
+
+@{
+    ViewData["Title"] = "OrderHistoryDetail";
+}
+
+<h1>OrderHistoryDetail</h1>
+
+<div>
+    <h4>Order</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Order.DateCreated)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Order.DateCreated)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Order.DateCompleted)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Order.DateCompleted)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Order.PaymentType)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Order.PaymentType.Description)
+        </dd>
+
+
+        @*
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.User)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.User.Id)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PaymentType)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PaymentType.AccountNumber)
+        </dd>
+        *@
+
+
+        <dd class="col-sm-10">
+            <table class="table">
+                <tr>
+                    <th>Products</th>
+                    <th>Price/Unit</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+
+                </tr>
+                @foreach (var p in Model.LineItems)
+                {
+                    <tr>
+
+                        <td>@p.Product.Title</td>
+                        <td>$@p.Product.Price</td>
+                        <td>@p.Units</td>
+                        <td>$@p.Cost</td>
+                    </tr>
+
+                }
+                <tr>
+                    <th></th>
+                    <td></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+
+                <tr>
+
+                    <th>Total Cost of Order</th>
+
+                    <td>$@Html.DisplayFor(model => model.TotalCost)</td>
+                </tr>
+            </table>
+        </dd>
+
+
+
+    </dl>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -34,7 +34,8 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Index()
         {
             var currentUser = await GetCurrentUserAsync();
-            var applicationDbContext = _context.Order.Include(o => o.PaymentType).Include(o => o.User).Where(o=> o.UserId == currentUser.Id);
+            //var applicationDbContext = _context.Order.Include(o => o.PaymentType).Include(o => o.User).Where(o=> o.UserId == currentUser.Id);
+            var applicationDbContext = _context.Order.Where(o => o.PaymentTypeId != null && currentUser.Id == o.UserId);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -205,6 +206,52 @@ namespace Bangazon.Controllers
             _context.Order.Remove(order);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        /////////When user clicks his account info, clicks into order history, clicks details on a past order, user will be shown this --
+        [Authorize]
+        public async Task<IActionResult> OrderHistoryDetail(int id)
+        {
+            var currentuser = await GetCurrentUserAsync();
+
+            var order = await _context.Order
+                .Include(o => o.PaymentType)
+                .Include(o => o.User)
+                .Include(o => o.OrderProducts)
+                 .ThenInclude(op => op.Product)
+                 .Where(o => o.OrderId == id)
+                .FirstOrDefaultAsync(m => m.UserId == currentuser.Id.ToString() && m.PaymentTypeId != null);
+
+            if (order == null || order.OrderProducts.Count() == 0)
+            {
+                return NotFound();
+            }
+
+
+            OrderDetailViewModel viewmodel = new OrderDetailViewModel
+            {
+                Order = order
+            };
+
+            //OrderLineItem LineItem = new OrderLineItem();
+
+            viewmodel.LineItems = order.OrderProducts
+                 .GroupBy(op => op.Product)
+                 .Select(p => new OrderLineItem
+                 {
+                     Product = p.Key,
+                     Units = p.Select(l => l.Product).Count(),
+                     Cost = p.Key.Price * p.Select(l => l.ProductId).Count()
+                 }).ToList();
+
+            
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(viewmodel);
         }
 
 
