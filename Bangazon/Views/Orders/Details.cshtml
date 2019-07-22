@@ -3,52 +3,57 @@
 @{
     ViewData["Title"] = "Details";
 }
-    <div>
-        <h1>Shopping Cart</h1>
+<div>
+    <h1>Shopping Cart</h1>
 
-        
-        <h4>Order</h4>
-        <table class="table">
-            <thead>
+
+    <h4>Current Order</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Product.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Product.Price)
+                </th>
+                <th>
+                    Unit
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.LineItems)
+            {
                 <tr>
-                    @*<th>
-                        @Html.DisplayNameFor(model => model.Order.DateCreated)
-                    </th>*@
-                    <th>
-                        @Html.DisplayNameFor(model => model.OrderProduct.Product.Title)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.OrderProduct.Product.Price)
-                    </th>
-                    <th>
-                        Unit
-                    </th>
-                    <th></th>
+
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Cost)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Units)
+                    </td>
+                    <td>
+
+                        @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.OrderId">Delete</a>*@
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.LineItems)
-                {
-                    <tr>
-                        @*<td>
-                            @Html.DisplayFor(modelItem => item.Product.DateCreated)
-                        </td>*@
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Product.Title)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Cost)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Units)
-                        </td>
-                        <td>
-                            @*<a asp-action="Edit" asp-route-id="@item.OrderId">Edit</a> |*@
-                            @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |
-                            <a asp-action="Delete" asp-route-id="@item.OrderId">Delete</a>*@
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <div class="btn btn-secondary">
+        <a href='javascript:history.go(-1)'>Go Back</a>
     </div>
+    |
+    <div class="btn btn-primary">
+        <a asp-action="Edit" asp-route-id="@Model.Order.OrderId">Checkout</a>
+    </div>
+</div>

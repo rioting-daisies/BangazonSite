@@ -1,4 +1,8 @@
-﻿@model Bangazon.Models.Product
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+
+
+@model Bangazon.Models.Product
 
 @{
     ViewData["Title"] = "Details";
@@ -9,35 +13,51 @@
 <div>
     <h4>Product</h4>
     <hr />
-    <dl class="row">     
-        <dt class = "col-sm-2">
+    <dl class="row">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Quantity)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Quantity)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Price)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Price)
         </dd>
     </dl>
-    <a asp-controller="Orders" asp-action="Purchase" asp-route-id="@Model.ProductId">Purchase</a>
+    @{ var currentUser = SignInManager.UserManager.GetUserId(User);
+
+        if (currentUser != null && Model.UserId == currentUser)
+        { <p>This is your product listing.</p>
+        }
+        else if (Model.Quantity > 0)
+        {
+            <a asp-controller="Orders" asp-action="AddToCart" asp-route-id="@Model.ProductId">Add to Cart</a>
+        }
+        else
+        {
+            <p>This product is sold out.</p>
+        }
+    }
+
+
 </div>
 <div>
-    <a asp-action="Index">Home</a> |
-    <a asp-controller="Products" asp-action="Types">Product Types</a>
+    <a href='javascript:history.go(-1)'>Previous Page</a> |
+    <a asp-action="Index" asp-controller="Products">Home</a>
+
 </div>

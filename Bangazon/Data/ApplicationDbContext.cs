@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -15,6 +17,37 @@ namespace Bangazon.Data {
         public DbSet<PaymentType> PaymentType { get; set; }
         public DbSet<Order> Order { get; set; }
         public DbSet<OrderProduct> OrderProduct { get; set; }
+
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            OnBeforeSaving();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            OnBeforeSaving();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        private void OnBeforeSaving()
+        {
+            foreach (var entry in ChangeTracker.Entries<PaymentType>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.CurrentValues["IsDeleted"] = false;
+                        break;
+
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified;
+                        entry.CurrentValues["IsDeleted"] = true;
+                        break;
+                }
+            }
+        }
 
         protected override void OnModelCreating (ModelBuilder modelBuilder) {
             base.OnModelCreating (modelBuilder);
@@ -44,6 +77,13 @@ namespace Bangazon.Data {
             modelBuilder.Entity<PaymentType> ()
                 .Property (b => b.DateCreated)
                 .HasDefaultValueSql ("GETDATE()");
+
+            modelBuilder.Entity<PaymentType>()
+             .Property<bool>("IsDeleted");
+
+            modelBuilder.Entity<PaymentType>()
+            .HasQueryFilter(post => EF.Property<bool>(post, "IsDeleted") == false);
+
 
             ApplicationUser user = new ApplicationUser
             {
@@ -81,23 +121,6 @@ namespace Bangazon.Data {
             user2.PasswordHash = passwordHash.HashPassword(user2, "Buyer8*");
             modelBuilder.Entity<ApplicationUser>().HasData(user2);
 
-
-            modelBuilder.Entity<PaymentType> ().HasData (
-                new PaymentType()
-                {
-                    PaymentTypeId = 1,
-                    UserId = user.Id,
-                    Description = "American Express",
-                    AccountNumber = "86753095551212"
-                },
-                new PaymentType()
-                {
-                    PaymentTypeId = 2,
-                    UserId = user.Id,
-                    Description = "Discover",
-                    AccountNumber = "4102948572991"
-                }
-            );
 
             modelBuilder.Entity<ProductType>().HasData(
                 new ProductType()
