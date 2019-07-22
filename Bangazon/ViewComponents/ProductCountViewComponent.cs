@@ -58,6 +58,11 @@ namespace Bangazon.ViewComponents
             var cartList = await _context.OrderProduct.Where(op => op.OrderId == openOrder.OrderId && op.ProductId == product.ProductId).ToListAsync();
             int productCount = product.Quantity - cartList.Count();
 
+            if (productCount < 0)
+            {
+                productCount = 0;
+            }
+
             return productCount;
         }
     }
