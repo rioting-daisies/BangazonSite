@@ -1,112 +1,48 @@
-# Welcome to Bangazon!
+# Welcome to Bangazon!!
 
-## Overview
+Welcome to our the site that will steal all the money from Jeff Bezos with our superior in every way E-Commerce site.  Prices can not be beat, and we use 
+teleportation with the help of our chief scientists who figured out Star Trek technology so you can instantly get your items (if it changes in size Bangazon is not responsible...).
 
-This version of Bangazon implements the Identity framework, and extends the base User object with the `ApplicationUser` model.
-It shows how to remove a model's property from the automatic model binding in a controller method by using `ModelState.Remove()`.
+## Getting Started
 
-## Setup for Everyone
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-Once the initial setup is complete by the volunteer and the PR is approved by your team lead, the PR will get merged into master and now everyone else can pull the repository.
+### Prerequisites
 
-1. Open Visual Studio and load the solution file
-1. Go to the Package Manager Console in Visual Studio.
-1. Execute `Update-Database` to generate your tables.
-1. Use the SQL Server Object Explorer to verify that everything worked as expected.
+1. A computer
+2. Visual Studio
+3. Azure Data Studio
 
-## References for Tickets
+### Installing
 
-### Accessing the Authenticated User
-
-In any of your controllers that need to access the currently authenticated user, for example the Order Summary screen or the New Product Form, you need to inject the `UserManager` into the controller. Here's the relevant code that you need.
-
-Add a private field to your controller.
-
-```cs
-private readonly UserManager<ApplicationUser> _userManager;
-```
-
-In the constructor, inject the `UserManager` service.
-
-```cs
-public ProductsController(ApplicationDbContext ctx,
-                          UserManager<ApplicationUser> userManager)
-{
-    _userManager = userManager;
-    _context = ctx;
-}
-```
-
-Then add the following private method to the controller.
-
-```cs
-private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
-```
-
-Once that is defined, any method that needs to see who the user is can invoke the method. Here's an example of when someone clicks the Purchase button for a product.
-
-```cs
-[Authorize]
-public async Task<IActionResult> Purchase([FromRoute] int id)
-{
-    // Find the product requested
-    Product productToAdd = await _context.Product.SingleOrDefaultAsync(p => p.ProductId == id);
-
-    // Get the current user
-    var user = await GetCurrentUserAsync();
-
-    // See if the user has an open order
-    var openOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+A step by step series of examples that tell you how to get a development env running
 
 
-    // If no order, create one, else add to existing order
-}
-```
+Open up git bash / terminal and clone down the repository onto your local machine
+Open the BangazonWorkSite directory in Visual Studio
+Locate the BangazonAPI.sql file in the project
+Copy and paste the contents into a new query in Azure Data Studio and run the query
+Refresh the databases on the explorer to ensure that the database was created
+Head back on over to Visual Studio and Run the application (make sure the BangazonSite server is selected)
+Once the application runs, you should now see the application launch in your browser.
+Click around and buy stuff, edit stuff, delete stuff, and sell stuff.
 
-### Grouped Products by Product Type
 
-One of the features you need to implement is a view that displays all of the product types as headers, with the first three products in that type listed beneath it. We are providing you a LINQ statement that will get you started.
+## Authors
 
-Whomever tackles that ticket, this is the method that you will need to add to your `ProductsController.cs`.
+* Jameka Echols
+* Alex Thacker
+* Brian Jobe
+* Josh Hibray 
 
-```cs
-public async Task<IActionResult> Types()
-{
-    var model = new ProductTypesViewModel();
+## License
 
-    // Build list of Product instances for display in view
-    // LINQ is awesome
-    model.GroupedProducts = await (
-        from t in _context.ProductType
-        join p in _context.Product
-        on t.ProductTypeId equals p.ProductTypeId
-        group new { t, p } by new { t.ProductTypeId, t.Label } into grouped
-        select new GroupedProducts
-        {
-            TypeId = grouped.Key.ProductTypeId,
-            TypeName = grouped.Key.Label,
-            ProductCount = grouped.Select(x => x.p.ProductId).Count(),
-            Products = grouped.Select(x => x.p).Take(3)
-        }).ToListAsync();
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-    return View(model);
-}
-```
+## Acknowledgments
 
-In addition to that, add the following custom route to the bottom of your `Startup.cs` file.
-
-```cs
-routes.MapRoute ("types", "types",
-    defaults : new { controller = "Products", action = "Types" });
-```
-
-## Removing Items from Model Validation
-
-One of the features you must implement is allowing customers to add products to sell. You'll need to remove the user from model validation to get it to work. Here's an example of something your team will need to do in `Create()` method in **`ProductsController`**.
-
-```cs
-// Remove the user from the model validation because it is
-// not information posted in the form
-ModelState.Remove("product.User");
-```
+* Hat tip to anyone whose code was used
+* Kudos to the new building
+* Inspiration - Not Jeff Bezos....
+* Thanks to Andy and Leah for being our coding Grand Wizards when we get stuck.
 
