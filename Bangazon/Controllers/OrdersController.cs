@@ -147,7 +147,7 @@ namespace Bangazon.Controllers
             }
 
 
-            if (order.User.PaymentTypes.Count() == 0)
+            if (order.User.PaymentTypes.Where(pt=> pt.IsDeleted == false).Count() == 0)
             {
                 return RedirectToAction("Create", "PaymentTypes");
             }
@@ -162,6 +162,7 @@ namespace Bangazon.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("OrderId,DateCreated,DateCompleted,UserId,PaymentTypeId,OrderProducts")] Order order)
         {
             if (id != order.OrderId)
@@ -213,6 +214,7 @@ namespace Bangazon.Controllers
 
         //////////////////////////////Created by Alex
         // GET: Orders/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             var currentuser = await GetCurrentUserAsync();
@@ -260,6 +262,7 @@ namespace Bangazon.Controllers
         // POST: Orders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var order = await _context.Order.FindAsync(id);
@@ -374,6 +377,7 @@ namespace Bangazon.Controllers
 
 
         //this is the delete method that will delete a product from the user's shopping cart
+        [Authorize]
         public async Task<IActionResult> DeleteShoppingCartItem(int orderId, int productId)
         {
             var currentuser = await GetCurrentUserAsync();

@@ -39,8 +39,7 @@
                     </td>
                     <td>
 
-                        @*<a asp-action="Details" asp-route-id="@item.OrderProducts">Details</a> |*@
-                        <a asp-action="DeleteShoppingCartItem" asp-route-orderId="@Model.Order.OrderId" asp-route-productId="@item.Product.ProductId">Delete</a>
+                        <a asp-action="DeleteShoppingCartItem" asp-route-orderId="@Model.Order.OrderId" asp-route-productId="@item.Product.ProductId">Remove from cart</a>
                     </td>
                 </tr>
             }
@@ -48,14 +47,14 @@
     </table>
 </div>
 <div>
-    <div>
-        <a asp-action="Delete" asp-route-id="@Model.Order.OrderId">Cancel Order</a>
-    </div>
     <div class="btn btn-secondary">
-        <a href='javascript:history.go(-1)'>Go Back</a>
+    <a class="text-light" asp-action="Delete" asp-route-id="@Model.Order.OrderId">Cancel Order</a>
+</div>
+    <div class="btn btn-secondary">
+        <a class="text-light" href='javascript:history.go(-1)'>Go Back</a>
     </div>
     |
     <div class="btn btn-primary">
-        <a asp-action="Edit" asp-route-id="@Model.Order.OrderId">Checkout</a>
+        <a class="text-light" asp-action="Edit" asp-route-id="@Model.Order.OrderId">Checkout</a>
     </div>
 </div>
