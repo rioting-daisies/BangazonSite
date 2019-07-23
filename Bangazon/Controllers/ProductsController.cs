@@ -10,6 +10,7 @@ using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ProductViewModels;
+using Bangazon.ViewComponents;
 
 namespace Bangazon.Controllers
 {
@@ -18,7 +19,7 @@ namespace Bangazon.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProductsController(ApplicationDbContext context, 
+        public ProductsController(ApplicationDbContext context,
             UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -80,6 +81,10 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
+            int count = await GetItemsAsync(product.ProductId);
+
+            ViewBag.ProductCount = count;
+
             return View(product);
         }
 
@@ -139,8 +144,7 @@ namespace Bangazon.Controllers
             {
                 return NotFound();
             }
-            ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
+
             return View(product);
         }
 
@@ -149,18 +153,28 @@ namespace Bangazon.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("ProductId,DateCreated,Description,Title,Price,Quantity,UserId,City,ImagePath,Active,ProductTypeId")] Product product)
         {
             if (id != product.ProductId)
             {
                 return NotFound();
             }
+            ModelState.Remove("User");
+            ModelState.Remove("ProductTypeId");
+            ModelState.Remove("Title");
+            ModelState.Remove("Description");
+            ModelState.Remove("UserId");
+            var productToUpdate = await _context.Product.FindAsync(id);
+            productToUpdate.Quantity = product.Quantity;
+            var currentUser = await GetCurrentUserAsync();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(product);
+                    productToUpdate.User = currentUser;
+                    _context.Update(productToUpdate);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -174,10 +188,9 @@ namespace Bangazon.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", "Products", new { id });
             }
-            ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
-            ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
+
             return View(product);
         }
 
@@ -239,16 +252,54 @@ namespace Bangazon.Controllers
         [Authorize]
         public async Task<IActionResult> MyProducts()
         {
-            var currentUser = GetCurrentUserAsync().Result;
-            var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
-            var products = applicationDbContext.Where(p => p.UserId == currentUser.Id).OrderByDescending(p => p.DateCreated);
-
-            return View(await products.ToListAsync());
+            var currentUser = await GetCurrentUserAsync();
+            var products = await _context.Product.Include(p => p.ProductType)
+                .Include(p => p.User)
+                .Where(p => p.User == currentUser)
+                .OrderByDescending(p => p.DateCreated).ToListAsync();
+            var orderProducts = await _context.OrderProduct
+                                        .Include(op => op.Order)
+                                        .Where(op => op.Order.PaymentTypeId != null).ToListAsync();
+            
+            var model = new ProductListViewModel()
+            {
+                ProductsWithSales = (
+                from op in orderProducts
+                join p in products
+                on op.ProductId equals p.ProductId
+                group new { op, p } by new { op.ProductId, p } into grouped
+                select new ProductDetailViewModel
+                {
+                    Product = grouped.Key.p,
+                    UnitsSold = grouped.Select(x => x.p.ProductId).Count()
+                }).ToList()
+            };
+            
+            return View(model);
         }
 
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);
+        }
+
+        private async Task<int> GetItemsAsync(int productId)
+        {
+            var user = await GetCurrentUserAsync();
+
+            // See if the user has an open order
+            var openOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+
+            var product = await _context.Product.Where(p => p.ProductId == productId).SingleOrDefaultAsync();
+
+            if (openOrder == null)
+            {
+                return product.Quantity;
+            }
+            var cartList = await _context.OrderProduct.Where(op => op.OrderId == openOrder.OrderId && op.ProductId == product.ProductId).ToListAsync();
+            int productCount = product.Quantity - cartList.Count();
+
+            return productCount;
         }
     }
 }

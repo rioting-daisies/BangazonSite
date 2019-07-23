@@ -6,6 +6,41 @@
 
 <h1>Checkout</h1>
 
+<div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Product
+            </th>
+            <th>
+                Price
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderProducts)
+        {
+        <tr>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Price)
+            </td>
+
+        </tr>
+        }
+    </tbody>
+</table>
+</div>
+
+
+
+
+
 <h4>Select a payment method to complete order.</h4>
 <hr />
 <div class="row">
