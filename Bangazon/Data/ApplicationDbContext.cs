@@ -74,13 +74,16 @@ namespace Bangazon.Data {
                 .WithOne (l => l.Product)
                 .OnDelete (DeleteBehavior.Restrict);
 
+            
             modelBuilder.Entity<PaymentType> ()
                 .Property (b => b.DateCreated)
                 .HasDefaultValueSql ("GETDATE()");
 
+            //adds a new column to the database that allows for soft delete of payment types. 
             modelBuilder.Entity<PaymentType>()
              .Property<bool>("IsDeleted");
 
+            //adds an initial filter for all requests that removes the deleted payments from the query. 
             modelBuilder.Entity<PaymentType>()
             .HasQueryFilter(post => EF.Property<bool>(post, "IsDeleted") == false);
 

@@ -1,0 +1,13 @@
+﻿@model Bangazon.Models.OrderViewModels.OrderLineItem
+@{
+    ViewData["Title"] = "CheckoutError";
+}
+
+<h1>Checkout Error</h1>
+
+<p>There are only @Html.DisplayFor(model => model.Product.Quantity) remaining units of @Html.DisplayFor(model => model.Product.Title) for sale.</p>
+<p>Please remove @ViewBag.UnitsOver units from your cart to continue checking out. </p>
+
+<div>
+    <a href='javascript:history.go(-1)'>Go Back</a>
+</div>
