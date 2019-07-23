@@ -35,9 +35,6 @@ Click around and buy stuff, edit stuff, delete stuff, and sell stuff.
 * Brian Jobe
 * Josh Hibray 
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
 
