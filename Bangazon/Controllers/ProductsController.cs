@@ -10,6 +10,8 @@ using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ProductViewModels;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Bangazon.Controllers
 {
@@ -17,12 +19,15 @@ namespace Bangazon.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHostingEnvironment hostingEnvironment;
 
         public ProductsController(ApplicationDbContext context, 
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            this.hostingEnvironment = hostingEnvironment;
+
         }
 
         // This method will be called every time we need to get the current user
@@ -114,8 +119,28 @@ namespace Bangazon.Controllers
 
             if (ModelState.IsValid)
             {
+                string uniqueFileName = null;
+
+                // If the Photo property on the incoming model object is not null, then the user
+                // has selected an image to upload.
+                if (viewModel.Photo != null)
+                {
+                    // The image must be uploaded to the images folder in wwwroot
+                    // To get the path of the wwwroot folder we are using the inject
+                    // HostingEnvironment service provided by ASP.NET Core
+                    string uploadsFolder = Path.Combine(hostingEnvironment.WebRootPath, "images");
+                    // To make sure the file name is unique we are appending a new
+                    // GUID value and and an underscore to the file name
+                    uniqueFileName = Guid.NewGuid().ToString() + "_" + viewModel.Photo.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    // Use CopyTo() method provided by IFormFile interface to
+                    // copy the file to wwwroot/images folder
+                    viewModel.Photo.CopyTo(new FileStream(filePath, FileMode.Create));
+                }
+
                 var product = viewModel.Product;
                 var currUser = await GetCurrentUserAsync();
+                product.ImagePath = uniqueFileName;
                 product.UserId = currUser.Id;
                 _context.Add(product);
 
