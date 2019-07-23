@@ -7,6 +7,6 @@ namespace Bangazon.Models.ProductViewModels
   {
     public Product Product { get; set; }
 
-        public int UnitsSold { get; set; }
+        public int? UnitsSold { get; set; }
     }
 }

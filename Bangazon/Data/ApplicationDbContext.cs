@@ -83,10 +83,6 @@ namespace Bangazon.Data {
             modelBuilder.Entity<PaymentType>()
              .Property<bool>("IsDeleted");
 
-            //adds an initial filter for all requests that removes the deleted payments from the query. 
-            modelBuilder.Entity<PaymentType>()
-            .HasQueryFilter(post => EF.Property<bool>(post, "IsDeleted") == false);
-
 
             ApplicationUser user = new ApplicationUser
             {

@@ -32,11 +32,12 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Index()
         {
             var currentUser = await GetCurrentUserAsync();
-            var applicationDbContext = _context.PaymentType.Include(p => p.User).Where(p => p.UserId == currentUser.Id);
+            var applicationDbContext = _context.PaymentType.Include(p => p.User).Where(p => p.UserId == currentUser.Id && p.IsDeleted == false);
             return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: PaymentTypes/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -84,61 +85,6 @@ namespace Bangazon.Controllers
             }
             return View(paymentType);
         }
-
-        //// GET: PaymentTypes/Edit/5
-        //[Authorize]
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var paymentType = await _context.PaymentType.FindAsync(id);
-        //    if (paymentType == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", paymentType.UserId);
-        //    return View(paymentType);
-        //}
-
-        //// POST: PaymentTypes/Edit/5
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[Authorize]
-        //public async Task<IActionResult> Edit(int id, [Bind("PaymentTypeId,DateCreated,Description,AccountNumber,UserId")] PaymentType paymentType)
-        //{
-        //    if (id != paymentType.PaymentTypeId)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(paymentType);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!PaymentTypeExists(paymentType.PaymentTypeId))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", paymentType.UserId);
-        //    return View(paymentType);
-        //}
 
         // GET: PaymentTypes/Delete/5
         [Authorize]

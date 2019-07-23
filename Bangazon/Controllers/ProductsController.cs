@@ -220,6 +220,7 @@ namespace Bangazon.Controllers
         }
 
         // GET: Products/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -242,6 +243,7 @@ namespace Bangazon.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Product.FindAsync(id);
@@ -299,6 +301,14 @@ namespace Bangazon.Controllers
                     UnitsSold = grouped.Select(x => x.p.ProductId).Count()
                 }).ToList()
             };
+
+            foreach(Product p in products)
+            {
+                if (!model.ProductsWithSales.Exists(ps => ps.Product.ProductId == p.ProductId))
+                {
+                    model.ProductsWithSales.Add(new ProductDetailViewModel { Product = p, UnitsSold = 0 }); 
+                }
+            }
 
             return View(model);
         }
