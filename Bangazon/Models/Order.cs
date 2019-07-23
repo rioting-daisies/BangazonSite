@@ -14,10 +14,12 @@ namespace Bangazon.Models
     [Required]
     [DataType(DataType.Date)]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public DateTime DateCreated {get;set;}
+        [Display(Name = "Date Created")]
+        public DateTime DateCreated {get;set;}
 
     [DataType(DataType.Date)]
-    public DateTime? DateCompleted {get;set;}
+        [Display(Name = "Date Completed")]
+        public DateTime? DateCompleted {get;set;}
 
     [Required]
     public string UserId {get; set;}

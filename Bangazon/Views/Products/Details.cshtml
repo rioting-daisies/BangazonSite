@@ -42,7 +42,8 @@
     @{ var currentUser = SignInManager.UserManager.GetUserId(User);
 
         if (currentUser != null && Model.UserId == currentUser)
-        { <p>This is your product listing.</p>
+        { <p>This is your product listing.</p>  
+          <a asp-action="Edit" asp-route-id="@Model.ProductId">Update Inventory</a>
         }
         else if (ViewBag.ProductCount > 0)
         {

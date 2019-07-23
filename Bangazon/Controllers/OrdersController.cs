@@ -64,9 +64,6 @@ namespace Bangazon.Controllers
                 Order = order
             };
 
-
-            OrderLineItem LineItem = new OrderLineItem();
-
             viewmodel.LineItems = order.OrderProducts
                  .GroupBy(op => op.Product)
                  .Select(p => new OrderLineItem

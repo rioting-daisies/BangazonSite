@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Author: Brian Jobe This view component updates the product quantity for individual users when adding products to the cart. 
+// It allows the correct remaining quantity to be displayed without updating the quantity in the database.  
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
