@@ -10,6 +10,8 @@ using Bangazon.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ProductViewModels;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Bangazon.ViewComponents;
 
 namespace Bangazon.Controllers
@@ -18,18 +20,21 @@ namespace Bangazon.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHostingEnvironment hostingEnvironment;
 
         public ProductsController(ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            this.hostingEnvironment = hostingEnvironment;
+
         }
 
         // This method will be called every time we need to get the current user
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
-        // The product index view has been changed to show the 20 products needed for the homepage model. 
+        // The product index view has been changed to show the 20 products needed for the homepage model.
         // The index controller also adds a search bar, with a dropdown filter to allow searches by city,
         // product name, or both.
         // GET: Products
@@ -104,7 +109,7 @@ namespace Bangazon.Controllers
         }
 
         // POST: Products/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -119,8 +124,28 @@ namespace Bangazon.Controllers
 
             if (ModelState.IsValid)
             {
+                string uniqueFileName = null;
+
+                // If the Photo property on the incoming model object is not null, then the user
+                // has selected an image to upload.
+                if (viewModel.Photo != null)
+                {
+                    // The image must be uploaded to the images folder in wwwroot
+                    // To get the path of the wwwroot folder we are using the inject
+                    // HostingEnvironment service provided by ASP.NET Core
+                    string uploadsFolder = Path.Combine(hostingEnvironment.WebRootPath, "images");
+                    // To make sure the file name is unique we are appending a new
+                    // GUID value and and an underscore to the file name
+                    uniqueFileName = Guid.NewGuid().ToString() + "_" + viewModel.Photo.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    // Use CopyTo() method provided by IFormFile interface to
+                    // copy the file to wwwroot/images folder
+                    viewModel.Photo.CopyTo(new FileStream(filePath, FileMode.Create));
+                }
+
                 var product = viewModel.Product;
                 var currUser = await GetCurrentUserAsync();
+                product.ImagePath = uniqueFileName;
                 product.UserId = currUser.Id;
                 _context.Add(product);
 
@@ -149,7 +174,7 @@ namespace Bangazon.Controllers
         }
 
         // POST: Products/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -260,7 +285,7 @@ namespace Bangazon.Controllers
             var orderProducts = await _context.OrderProduct
                                         .Include(op => op.Order)
                                         .Where(op => op.Order.PaymentTypeId != null).ToListAsync();
-            
+
             var model = new ProductListViewModel()
             {
                 ProductsWithSales = (
@@ -274,7 +299,7 @@ namespace Bangazon.Controllers
                     UnitsSold = grouped.Select(x => x.p.ProductId).Count()
                 }).ToList()
             };
-            
+
             return View(model);
         }
 

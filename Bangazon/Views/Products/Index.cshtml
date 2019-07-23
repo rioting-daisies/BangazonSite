@@ -58,6 +58,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Price)
             </th>
+            <th>
+                Image
+            </th>
 
             @{ if (ViewData["SearchBar"] != null && ViewData["SearchBar"].ToString() == "1")
                 {
@@ -76,12 +79,14 @@
         <tr>
             @if (SignInManager.IsSignedIn(User))
             {
+                var photoPath = "~/images/" + (item.ImagePath ?? "noimage.jpg");
                 var currentUser = SignInManager.UserManager.GetUserId(User);
                 if (item.UserId == currentUser)
+
                 {
-            <td>
-                <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title) </a> (My listing)
-            </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.ProductId">@Html.DisplayFor(modelItem => item.Title) </a> (My listing)
+                    </td>
                 }
                 else
                 {
@@ -103,6 +108,10 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                <img class="card-img-top imageThumbnail" src="~/images/@item.ImagePath"
+                     asp-append-version="true" />
             </td>
             @{ if (ViewData["SearchBar"] != null && ViewData["SearchBar"].ToString() == "1")
                 {
